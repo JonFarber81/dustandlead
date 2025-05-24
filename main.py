@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-Old West Gunfight - Main game file
+Old West Gunfight - Main game file with enhanced font support
 
 This module contains the main Game class that coordinates all game systems
 including player input, entity management, combat resolution, and game state.
+Enhanced with better font loading options for improved visual appearance.
 """
 
 import random
+import os
 from typing import Optional, Tuple, Dict, Any, Union
 
 import tcod
@@ -21,6 +23,30 @@ from entity import Enemy, Player
 from game_map import GameMap
 from renderer import Renderer
 
+
+def load_font() -> tcod.tileset.Tileset:
+    """Load the font
+    
+    Returns:
+        A TCOD Tileset object with the loaded font
+    """
+    # Option 2: Try high-quality bitmap fonts
+    bitmap_fonts = [
+        ("dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD),  # Original fallback
+        ("fonts/Hack-Regular.png", 32, 8, tcod.tileset.CHARMAP_CP437),
+        ("fonts/dejavu12x12_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD),
+        ("fonts/dejavu16x16_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD),
+    ]
+    
+    for font_path, cols, rows, charmap in bitmap_fonts:
+        if os.path.exists(font_path):
+            try:
+                print(f"Loading bitmap font: {font_path}")
+                return tcod.tileset.load_tilesheet(font_path, cols, rows, charmap)
+            except Exception as e:
+                print(f"Failed to load {font_path}: {e}")
+                continue
+    
 
 class Game:
     """Main game class that coordinates all systems.
@@ -317,18 +343,21 @@ class Game:
 def main() -> None:
     """Main function to run the game.
     
-    Initializes TCOD context, creates game and renderer instances,
-    and runs the main game loop handling events and rendering.
+    Initializes TCOD context with enhanced font loading, creates game and 
+    renderer instances, and runs the main game loop handling events and rendering.
     """
-    # Initialize tcod context
+    # Load the best available font
+    tileset = load_font()
+    
+    # Initialize tcod context with enhanced settings
     with tcod.context.new(
         columns=SCREEN_WIDTH,
         rows=SCREEN_HEIGHT + 12,  # Extra space for UI
-        tileset=tcod.tileset.load_tilesheet(
-            "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
-        ),
-        title="Dust & Lead",
+        tileset=tileset,
+        title="Old West Gunfight - Enhanced Edition",
         vsync=True,
+        # Enable integer scaling for crisp pixel fonts
+        renderer=tcod.context.RENDERER_SDL2,  # SDL2 renderer for better performance
     ) as context:
         # Create console and game
         console = tcod.console.Console(SCREEN_WIDTH, SCREEN_HEIGHT + 12)
@@ -336,6 +365,13 @@ def main() -> None:
         # Create renderer and link it to the game
         renderer = Renderer(console, context)
         game.set_renderer(renderer)
+        
+        print("Game started! Controls:")
+        print("- Arrow keys: Move")
+        print("- F: Fire weapon")
+        print("- ESC: Quit")
+        print("- R: Restart (when game over)")
+        
         # Main game loop
         while True:
             # Render the current frame
