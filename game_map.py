@@ -2,19 +2,18 @@
 Game map generation and utilities
 """
 import random
+
 import tcod
-from constants import (
-    MIN_WALL_CLUSTERS, MAX_WALL_CLUSTERS, 
-    MIN_CLUSTER_SIZE, MAX_CLUSTER_SIZE,
-    TREE_CLUSTERS, TREE_CLUSTER_SIZE,
-    WATER_FEATURES, WATER_SIZE,
-    ROCK_FORMATIONS, CACTUS_PATCHES,
-    BUILDING_RUINS
-)
+
+from constants import (BUILDING_RUINS, CACTUS_PATCHES, MAX_CLUSTER_SIZE,
+                       MAX_WALL_CLUSTERS, MIN_CLUSTER_SIZE, MIN_WALL_CLUSTERS,
+                       ROCK_FORMATIONS, TREE_CLUSTER_SIZE, TREE_CLUSTERS,
+                       WATER_FEATURES, WATER_SIZE)
 
 
 class TerrainType:
     """Enum-like class for different terrain types"""
+
     FLOOR = 0
     WALL = 1
     TREE = 2
@@ -26,7 +25,7 @@ class TerrainType:
 
 class GameMap:
     """Handles map generation, collision detection, and line of sight"""
-    
+
     def __init__(self, width, height):
         self.width = width
         self.height = height
@@ -38,17 +37,17 @@ class GameMap:
         """Generate an old west themed map with various terrain features"""
         # Start with basic border walls
         self._create_border_walls()
-        
+
         # Add natural terrain features
         self._add_water_features()
         self._add_tree_clusters()
         self._add_rock_formations()
         self._add_cactus_patches()
-        
+
         # Add man-made structures
         self._add_building_ruins()
         self._add_cover_walls()
-        
+
     def _create_border_walls(self):
         """Create walls around the map border"""
         for x in range(self.width):
@@ -61,13 +60,13 @@ class GameMap:
     def _add_water_features(self):
         """Add rivers, ponds, or streams"""
         num_features = random.randint(*WATER_FEATURES)
-        
+
         for _ in range(num_features):
             if random.choice([True, False]):  # 50% chance river vs pond
                 self._create_river()
             else:
                 self._create_pond()
-    
+
     def _create_river(self):
         """Create a winding river across the map"""
         # Choose river direction (horizontal or vertical)
@@ -78,7 +77,7 @@ class GameMap:
                 # Add some meandering
                 y_offset = random.randint(-2, 2)
                 river_y = max(2, min(self.height - 3, y_center + y_offset))
-                
+
                 # Make river 1-3 tiles wide
                 width = random.randint(1, 2)
                 for dy in range(-width, width + 1):
@@ -91,103 +90,113 @@ class GameMap:
             for y in range(2, self.height - 2):
                 x_offset = random.randint(-2, 2)
                 river_x = max(2, min(self.width - 3, x_center + x_offset))
-                
+
                 width = random.randint(1, 2)
                 for dx in range(-width, width + 1):
                     wx = river_x + dx
                     if self.is_valid_position(wx, y):
                         self.tiles[wx][y] = TerrainType.WATER
-    
+
     def _create_pond(self):
         """Create a small pond or lake"""
         center_x = random.randint(5, self.width - 6)
         center_y = random.randint(5, self.height - 6)
         size = random.randint(*WATER_SIZE)
-        
+
         # Create roughly circular pond
-        for x in range(center_x - size//2, center_x + size//2 + 1):
-            for y in range(center_y - size//2, center_y + size//2 + 1):
+        for x in range(center_x - size // 2, center_x + size // 2 + 1):
+            for y in range(center_y - size // 2, center_y + size // 2 + 1):
                 if self.is_valid_position(x, y):
                     distance = abs(x - center_x) + abs(y - center_y)
-                    if distance <= size//2 + random.randint(-1, 1):
+                    if distance <= size // 2 + random.randint(-1, 1):
                         self.tiles[x][y] = TerrainType.WATER
 
     def _add_tree_clusters(self):
         """Add clusters of trees for cover and atmosphere"""
         num_clusters = random.randint(*TREE_CLUSTERS)
-        
+
         for _ in range(num_clusters):
             cluster_x = random.randint(3, self.width - 4)
             cluster_y = random.randint(3, self.height - 4)
             cluster_size = random.randint(*TREE_CLUSTER_SIZE)
-            
+
             for _ in range(cluster_size):
                 # Place trees in a rough cluster pattern
                 offset_x = random.randint(-3, 3)
                 offset_y = random.randint(-3, 3)
                 tree_x = cluster_x + offset_x
                 tree_y = cluster_y + offset_y
-                
-                if (self.is_valid_position(tree_x, tree_y) and 
-                    self.tiles[tree_x][tree_y] == TerrainType.FLOOR):
+
+                if (
+                    self.is_valid_position(tree_x, tree_y)
+                    and self.tiles[tree_x][tree_y] == TerrainType.FLOOR
+                ):
                     self.tiles[tree_x][tree_y] = TerrainType.TREE
 
     def _add_rock_formations(self):
         """Add rocky outcroppings for cover"""
         num_formations = random.randint(*ROCK_FORMATIONS)
-        
+
         for _ in range(num_formations):
             center_x = random.randint(3, self.width - 4)
             center_y = random.randint(3, self.height - 4)
             formation_size = random.randint(2, 5)
-            
+
             for _ in range(formation_size):
                 offset_x = random.randint(-2, 2)
                 offset_y = random.randint(-2, 2)
                 rock_x = center_x + offset_x
                 rock_y = center_y + offset_y
-                
-                if (self.is_valid_position(rock_x, rock_y) and 
-                    self.tiles[rock_x][rock_y] == TerrainType.FLOOR):
+
+                if (
+                    self.is_valid_position(rock_x, rock_y)
+                    and self.tiles[rock_x][rock_y] == TerrainType.FLOOR
+                ):
                     self.tiles[rock_x][rock_y] = TerrainType.ROCK
 
     def _add_cactus_patches(self):
         """Add desert cacti scattered around"""
         num_patches = random.randint(*CACTUS_PATCHES)
-        
+
         for _ in range(num_patches):
             patch_x = random.randint(2, self.width - 3)
             patch_y = random.randint(2, self.height - 3)
             patch_size = random.randint(1, 4)
-            
+
             for _ in range(patch_size):
                 offset_x = random.randint(-4, 4)
                 offset_y = random.randint(-4, 4)
                 cactus_x = patch_x + offset_x
                 cactus_y = patch_y + offset_y
-                
-                if (self.is_valid_position(cactus_x, cactus_y) and 
-                    self.tiles[cactus_x][cactus_y] == TerrainType.FLOOR):
+
+                if (
+                    self.is_valid_position(cactus_x, cactus_y)
+                    and self.tiles[cactus_x][cactus_y] == TerrainType.FLOOR
+                ):
                     self.tiles[cactus_x][cactus_y] = TerrainType.CACTUS
 
     def _add_building_ruins(self):
         """Add ruins of old buildings"""
         num_ruins = random.randint(*BUILDING_RUINS)
-        
+
         for _ in range(num_ruins):
             # Create small rectangular ruins
             ruin_x = random.randint(4, self.width - 8)
             ruin_y = random.randint(4, self.height - 8)
             width = random.randint(3, 6)
             height = random.randint(3, 5)
-            
+
             # Create partial walls (ruins are broken)
             for x in range(ruin_x, ruin_x + width):
                 for y in range(ruin_y, ruin_y + height):
                     if self.is_valid_position(x, y):
                         # Only place walls on the edges, and not all of them
-                        is_edge = (x == ruin_x or x == ruin_x + width - 1 or 
-                                 y == ruin_y or y == ruin_y + height - 1)
+                        is_edge = (
+                            x == ruin_x
+                            or x == ruin_x + width - 1
+                            or y == ruin_y
+                            or y == ruin_y + height - 1
+                        )
                         if is_edge and random.random() < 0.7:  # 70% chance for wall
                             if self.tiles[x][y] == TerrainType.FLOOR:
                                 self.tiles[x][y] = TerrainType.BUILDING
@@ -198,12 +207,14 @@ class GameMap:
         for _ in range(num_walls):
             x = random.randint(2, self.width - 3)
             y = random.randint(2, self.height - 3)
-            
+
             # Create small wall clusters
             cluster_size = random.randint(MIN_CLUSTER_SIZE, MAX_CLUSTER_SIZE)
             for _ in range(cluster_size):
-                if (self.is_valid_position(x, y) and 
-                    self.tiles[x][y] == TerrainType.FLOOR):
+                if (
+                    self.is_valid_position(x, y)
+                    and self.tiles[x][y] == TerrainType.FLOOR
+                ):
                     self.tiles[x][y] = TerrainType.WALL
                 x += random.randint(-1, 1)
                 y += random.randint(-1, 1)
@@ -216,11 +227,14 @@ class GameMap:
         """Check if a position is blocked (wall or out of bounds)"""
         if not self.is_valid_position(x, y):
             return True
-        
+
         # All solid terrain types block movement
         blocking_terrain = {
-            TerrainType.WALL, TerrainType.TREE, TerrainType.WATER, 
-            TerrainType.ROCK, TerrainType.BUILDING
+            TerrainType.WALL,
+            TerrainType.TREE,
+            TerrainType.WATER,
+            TerrainType.ROCK,
+            TerrainType.BUILDING,
         }
         return self.tiles[x][y] in blocking_terrain
 
@@ -228,11 +242,13 @@ class GameMap:
         """Check if a position blocks bullets (different from movement)"""
         if not self.is_valid_position(x, y):
             return True
-        
+
         # Cacti don't block bullets, but other terrain does
         bullet_blocking = {
-            TerrainType.WALL, TerrainType.TREE, TerrainType.ROCK, 
-            TerrainType.BUILDING
+            TerrainType.WALL,
+            TerrainType.TREE,
+            TerrainType.ROCK,
+            TerrainType.BUILDING,
         }
         return self.tiles[x][y] in bullet_blocking
 
@@ -281,23 +297,24 @@ class GameMap:
     def find_spawn_positions(self, min_distance=20):
         """Find two spawn positions that are far apart"""
         valid_positions = self.find_valid_positions()
-        
+
         if len(valid_positions) < 2:
             return None, None
 
         # Pick first position randomly
         pos1 = random.choice(valid_positions)
-        
+
         # Find positions far from the first one
         distant_positions = [
-            pos for pos in valid_positions 
+            pos
+            for pos in valid_positions
             if abs(pos[0] - pos1[0]) + abs(pos[1] - pos1[1]) > min_distance
         ]
-        
+
         if distant_positions:
             pos2 = random.choice(distant_positions)
         else:
             # If no distant positions, just pick any other position
             pos2 = random.choice([pos for pos in valid_positions if pos != pos1])
-            
+
         return pos1, pos2

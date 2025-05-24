@@ -3,25 +3,24 @@
 Old West Gunfight - Main game file
 """
 
-import tcod
 import random
 
-# Import our custom modules
-from constants import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, MAP_WIDTH, MAP_HEIGHT,
-    COLOR_PLAYER, COLOR_ENEMY
-)
-from entity import Player, Enemy
-from game_map import GameMap
-from combat import CombatSystem, WeaponStats
+import tcod
+
 from ai import EnemyAI
+from bonus_system import BonusManager, PlayerBonus
+from combat import CombatSystem, WeaponStats
+# Import our custom modules
+from constants import (COLOR_ENEMY, COLOR_PLAYER, MAP_HEIGHT, MAP_WIDTH,
+                       SCREEN_HEIGHT, SCREEN_WIDTH)
+from entity import Enemy, Player
+from game_map import GameMap
 from renderer import Renderer
-from bonus_system import PlayerBonus, BonusManager
 
 
 class Game:
     """Main game class that coordinates all systems"""
-    
+
     def __init__(self):
         self.game_map = GameMap(MAP_WIDTH, MAP_HEIGHT)
         self.player = None
@@ -43,16 +42,16 @@ class Game:
     def spawn_entities(self):
         """Spawn player and enemy at valid positions"""
         player_pos, enemy_pos = self.game_map.find_spawn_positions()
-        
+
         if player_pos and enemy_pos:
             # Create player
             self.player = Player(player_pos[0], player_pos[1])
             self.player.color = COLOR_PLAYER
-            
+
             # Create enemy
             self.enemy = Enemy(enemy_pos[0], enemy_pos[1])
             self.enemy.color = COLOR_ENEMY
-            
+
             # Create AI for enemy
             self.enemy_ai = EnemyAI(self.enemy)
         else:
@@ -61,13 +60,13 @@ class Game:
             if len(valid_positions) >= 2:
                 player_pos = valid_positions[0]
                 enemy_pos = valid_positions[-1]
-                
+
                 self.player = Player(player_pos[0], player_pos[1])
                 self.player.color = COLOR_PLAYER
-                
+
                 self.enemy = Enemy(enemy_pos[0], enemy_pos[1])
                 self.enemy.color = COLOR_ENEMY
-                
+
                 self.enemy_ai = EnemyAI(self.enemy)
 
     def set_renderer(self, renderer):
@@ -77,59 +76,63 @@ class Game:
     def get_game_state(self):
         """Get current game state for rendering"""
         return {
-            'game_map': self.game_map,
-            'entities': [self.player, self.enemy],
-            'player': self.player,
-            'enemy': self.enemy,
-            'message': self.message,
-            'game_over': self.game_over,
-            'winner': self.winner,
-            'game_started': self.game_started,
-            'bonus_selected': self.bonus_selected,
-            'weapon_selected': self.weapon_selected,
-            'player_weapon': self.player_weapon,
-            'player_bonus': self.player_bonus,
-            'bonus_manager': self.bonus_manager
+            "game_map": self.game_map,
+            "entities": [self.player, self.enemy],
+            "player": self.player,
+            "enemy": self.enemy,
+            "message": self.message,
+            "game_over": self.game_over,
+            "winner": self.winner,
+            "game_started": self.game_started,
+            "bonus_selected": self.bonus_selected,
+            "weapon_selected": self.weapon_selected,
+            "player_weapon": self.player_weapon,
+            "player_bonus": self.player_bonus,
+            "bonus_manager": self.bonus_manager,
         }
 
     def select_bonus(self, bonus_choice):
         """Select bonus for the player"""
         bonus_map = {
-            '1': 'tough',
-            '2': 'longshot', 
-            '3': 'quickdraw',
-            '4': 'eagle_eye',
-            '5': 'gunslinger',
-            '6': 'desperado'
+            "1": "tough",
+            "2": "longshot",
+            "3": "quickdraw",
+            "4": "eagle_eye",
+            "5": "gunslinger",
+            "6": "desperado",
         }
-        
+
         if bonus_choice in bonus_map:
             bonus_id = bonus_map[bonus_choice]
             self.player_bonus = PlayerBonus.get_bonus_by_id(bonus_id)
             self.bonus_manager = BonusManager(self.player_bonus)
-            
+
             # Apply bonus to player immediately
             if self.player:
                 self.bonus_manager.apply_bonus_to_player(self.player)
-            
+
             self.bonus_selected = True
-            self.message = f"You selected {self.player_bonus['name']}. Choose your weapon!"
+            self.message = (
+                f"You selected {self.player_bonus['name']}. Choose your weapon!"
+            )
             return True
         return False
 
     def select_weapon(self, weapon_choice):
         """Select weapon for the player"""
         weapons = {
-            '1': WeaponStats.PISTOL,
-            '2': WeaponStats.RIFLE,
-            '3': WeaponStats.SHOTGUN
+            "1": WeaponStats.PISTOL,
+            "2": WeaponStats.RIFLE,
+            "3": WeaponStats.SHOTGUN,
         }
-        
+
         if weapon_choice in weapons:
             self.player_weapon = weapons[weapon_choice]
             self.weapon_selected = True
             self.game_started = True
-            self.message = f"You selected the {self.player_weapon['name']}. The duel begins!"
+            self.message = (
+                f"You selected the {self.player_weapon['name']}. The duel begins!"
+            )
             return True
         return False
 
@@ -140,17 +143,17 @@ class Game:
             if key.sym == tcod.event.KeySym.ESCAPE:
                 return "exit"
             elif key.sym == tcod.event.KeySym.N1:
-                self.select_bonus('1')
+                self.select_bonus("1")
             elif key.sym == tcod.event.KeySym.N2:
-                self.select_bonus('2')
+                self.select_bonus("2")
             elif key.sym == tcod.event.KeySym.N3:
-                self.select_bonus('3')
+                self.select_bonus("3")
             elif key.sym == tcod.event.KeySym.N4:
-                self.select_bonus('4')
+                self.select_bonus("4")
             elif key.sym == tcod.event.KeySym.N5:
-                self.select_bonus('5')
+                self.select_bonus("5")
             elif key.sym == tcod.event.KeySym.N6:
-                self.select_bonus('6')
+                self.select_bonus("6")
             return None
 
         # Weapon selection phase
@@ -158,11 +161,11 @@ class Game:
             if key.sym == tcod.event.KeySym.ESCAPE:
                 return "exit"
             elif key.sym == tcod.event.KeySym.N1:
-                self.select_weapon('1')
+                self.select_weapon("1")
             elif key.sym == tcod.event.KeySym.N2:
-                self.select_weapon('2')
+                self.select_weapon("2")
             elif key.sym == tcod.event.KeySym.N3:
-                self.select_weapon('3')
+                self.select_weapon("3")
             return None
 
         # Game over phase
@@ -207,22 +210,29 @@ class Game:
     def handle_player_shoot(self):
         """Handle player shooting with selected weapon and bonus"""
         shot_result = self.combat_system.attempt_shot_with_weapon_and_bonus(
-            self.player, self.enemy, self.game_map, self.player_weapon, self.bonus_manager
+            self.player,
+            self.enemy,
+            self.game_map,
+            self.player_weapon,
+            self.bonus_manager,
         )
-        
+
         # Animate the bullet
         if self.renderer:
             self.renderer.animate_bullet(
-                self.player.x, self.player.y,
-                shot_result['bullet_end'][0], shot_result['bullet_end'][1],
-                self.game_map, self.get_game_state(),
-                hit_target=shot_result['hit_target']
+                self.player.x,
+                self.player.y,
+                shot_result["bullet_end"][0],
+                shot_result["bullet_end"][1],
+                self.game_map,
+                self.get_game_state(),
+                hit_target=shot_result["hit_target"],
             )
-        
-        self.message = shot_result['message']
-        
+
+        self.message = shot_result["message"]
+
         # Check if enemy died
-        if shot_result.get('target_died', False):
+        if shot_result.get("target_died", False):
             self.game_over = True
             self.winner = self.player.name
 
@@ -230,28 +240,31 @@ class Game:
         """Handle enemy AI turn"""
         if not self.enemy.alive:
             return
-            
+
         action_type, action_data, ai_message = self.enemy_ai.take_turn(
             self.player, self.game_map, self.combat_system
         )
-        
+
         if action_type == "shoot":
             shot_result = action_data
-            
+
             # Animate enemy bullet
             if self.renderer:
                 self.renderer.animate_bullet(
-                    self.enemy.x, self.enemy.y,
-                    shot_result['bullet_end'][0], shot_result['bullet_end'][1],
-                    self.game_map, self.get_game_state(),
-                    hit_target=shot_result['hit_target']
+                    self.enemy.x,
+                    self.enemy.y,
+                    shot_result["bullet_end"][0],
+                    shot_result["bullet_end"][1],
+                    self.game_map,
+                    self.get_game_state(),
+                    hit_target=shot_result["hit_target"],
                 )
-            
+
             # Check if player died
-            if shot_result.get('target_died', False):
+            if shot_result.get("target_died", False):
                 self.game_over = True
                 self.winner = self.enemy.name
-        
+
         self.message = ai_message
 
     def restart_game(self):

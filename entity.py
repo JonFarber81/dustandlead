@@ -1,12 +1,12 @@
 """
 Entity classes for game objects
 """
-from constants import PLAYER_MAX_HP, ENEMY_MAX_HP
+from constants import ENEMY_MAX_HP, PLAYER_MAX_HP
 
 
 class Entity:
     """Base class for all game entities (player, enemies, etc.)"""
-    
+
     def __init__(self, x, y, char, color, name, hp=100):
         self.x = x
         self.y = y
@@ -45,37 +45,40 @@ class Entity:
     def distance_to(self, other_entity):
         """Calculate distance to another entity"""
         import math
-        return math.sqrt((other_entity.x - self.x) ** 2 + (other_entity.y - self.y) ** 2)
+
+        return math.sqrt(
+            (other_entity.x - self.x) ** 2 + (other_entity.y - self.y) ** 2
+        )
 
 
 class Player(Entity):
     """Player entity with specific defaults"""
-    
+
     def __init__(self, x, y):
-        super().__init__(x, y, '@', None, "Player", PLAYER_MAX_HP)
+        super().__init__(x, y, "@", None, "Player", PLAYER_MAX_HP)
         # Color will be set from constants in game logic
 
 
 class Enemy(Entity):
     """Enemy entity with AI capabilities"""
-    
+
     def __init__(self, x, y, name="Bandit"):
-        super().__init__(x, y, 'B', None, name, ENEMY_MAX_HP)
+        super().__init__(x, y, "B", None, name, ENEMY_MAX_HP)
         # Color will be set from constants in game logic
 
     def get_move_towards(self, target_entity):
         """Calculate movement direction towards target"""
         dx = 0
         dy = 0
-        
+
         if target_entity.x > self.x:
             dx = 1
         elif target_entity.x < self.x:
             dx = -1
-            
+
         if target_entity.y > self.y:
             dy = 1
         elif target_entity.y < self.y:
             dy = -1
-            
+
         return dx, dy
