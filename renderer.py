@@ -9,8 +9,7 @@ from constants import (BULLET_ANIMATION_DELAY, COLOR_BLOOD, COLOR_BUILDING,
                        COLOR_BULLET, COLOR_CACTUS, COLOR_ENEMY,
                        COLOR_FLOOR, COLOR_PLAYER, COLOR_ROCK, COLOR_TREE,
                        COLOR_WALL, COLOR_WATER, HIT_ANIMATION_DELAY,
-                       IMPACT_ANIMATION_DELAY, MAP_HEIGHT, MAP_WIDTH,
-                       SCREEN_HEIGHT, SCREEN_WIDTH)
+                       IMPACT_ANIMATION_DELAY, MAP_HEIGHT, MAP_WIDTH, SCREEN_WIDTH)
 from game_map import TerrainType
 
 
