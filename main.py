@@ -262,9 +262,9 @@ class Game:
 def main():
     """Main function to run the game"""
     # Initialize tcod context
-    with tcod.context.new_terminal(
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT + 12,  # Extra space for UI
+    with tcod.context.new(
+        columns=SCREEN_WIDTH,
+        rows=SCREEN_HEIGHT + 12,  # Extra space for UI
         tileset=tcod.tileset.load_tilesheet(
             "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
         ),
@@ -274,18 +274,15 @@ def main():
         # Create console and game
         console = tcod.console.Console(SCREEN_WIDTH, SCREEN_HEIGHT + 12)
         game = Game()
-        
         # Create renderer and link it to the game
         renderer = Renderer(console, context)
         game.set_renderer(renderer)
-
         # Main game loop
         while True:
             # Render the current frame
             game_state = game.get_game_state()
             renderer.render_game(game_state)
             renderer.present()
-
             # Handle events
             for event in tcod.event.wait():
                 if event.type == "QUIT":

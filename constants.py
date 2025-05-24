@@ -10,20 +10,19 @@ MAP_WIDTH = 80
 MAP_HEIGHT = 50
 
 # Colors
-COLOR_PLAYER = tcod.white
-COLOR_ENEMY = tcod.red
-COLOR_WALL = tcod.dark_gray
-COLOR_FLOOR = tcod.darker_gray
-COLOR_BULLET = tcod.yellow
-COLOR_BLOOD = tcod.dark_red
-
+COLOR_PLAYER = (255, 255, 255)  # white
+COLOR_ENEMY = (255, 0, 0)  # red
+COLOR_WALL = (64, 64, 64)  # dark_gray
+COLOR_FLOOR = (32, 32, 32)  # darker_gray
+COLOR_BULLET = (255, 255, 0)  # yellow
+COLOR_BLOOD = (128, 0, 0)  # dark_red
 # New terrain colors
-COLOR_TREE = tcod.dark_green
-COLOR_WATER = tcod.blue
-COLOR_DIRT = tcod.dark_sepia
-COLOR_ROCK = tcod.gray
-COLOR_CACTUS = tcod.green
-COLOR_BUILDING = tcod.dark_amber
+COLOR_TREE = (0, 128, 0)  # dark_green
+COLOR_WATER = (0, 0, 255)  # blue
+COLOR_DIRT = (127, 101, 63)  # dark_sepia
+COLOR_ROCK = (128, 128, 128)  # gray
+COLOR_CACTUS = (0, 255, 0)  # green
+COLOR_BUILDING = (255, 192, 0)  # dark_amber
 
 # Game settings
 PLAYER_MAX_HP = 100

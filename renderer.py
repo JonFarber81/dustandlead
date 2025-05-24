@@ -209,7 +209,7 @@ class Renderer:
         title = "=== CHOOSE YOUR WEAPON ==="
         self.console.print(
             (SCREEN_WIDTH - len(title)) // 2, 10, 
-            title, tcod.yellow
+            title, (255, 255, 0)
         )
         
         weapons_info = [
@@ -237,13 +237,13 @@ class Renderer:
         
         start_y = 15
         for i, line in enumerate(weapons_info):
-            color = tcod.white
+            color = (255, 255, 255)
             if line.startswith(('1.', '2.', '3.')):
-                color = tcod.light_blue
+                color = (63, 63, 255)
             elif line.startswith('   - Best for:'):
-                color = tcod.light_green
+                color = (63, 255, 63)
             elif line.startswith('Press'):
-                color = tcod.yellow
+                color = (255, 255, 0)
                 
             self.console.print(
                 (SCREEN_WIDTH - len(line)) // 2, 
