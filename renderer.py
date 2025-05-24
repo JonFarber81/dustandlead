@@ -1,44 +1,3 @@
-def _render_weapon_selection(self):
-    """Render the weapon selection screen"""
-    title = "=== CHOOSE YOUR WEAPON ==="
-    self.console.print((SCREEN_WIDTH - len(title)) // 2, 10, title, (255, 255, 0))
-
-    weapons_info = [
-        "1. PISTOL",
-        "   - Range: 12 tiles",
-        "   - Accuracy: Good (40% minimum)",
-        "   - Damage: 20-35",
-        "   - Best for: Balanced combat",
-        "",
-        "2. RIFLE",
-        "   - Range: 20 tiles",
-        "   - Accuracy: Excellent (60% minimum)",
-        "   - Damage: 35-50",
-        "   - Best for: Long range precision",
-        "",
-        "3. SHOTGUN",
-        "   - Range: 8 tiles",
-        "   - Accuracy: Outstanding (80% minimum)",
-        "   - Damage: 40-60",
-        "   - Best for: Close quarters devastation",
-        "",
-        "Press 1, 2, or 3 to select your weapon",
-        "Press ESC to quit",
-    ]
-
-    start_y = 15
-    for i, line in enumerate(weapons_info):
-        color = (255, 255, 255)  # white
-        if line.startswith(("1.", "2.", "3.")):
-            color = (173, 216, 230)  # light blue
-        elif line.startswith("   - Best for:"):
-            color = (144, 238, 144)  # light green
-        elif line.startswith("Press"):
-            color = (255, 255, 0)  # yellow
-
-        self.console.print((SCREEN_WIDTH - len(line)) // 2, start_y + i, line, color)
-
-
 """
 Rendering system for the game
 """
@@ -47,7 +6,7 @@ import time
 import tcod
 
 from constants import (BULLET_ANIMATION_DELAY, COLOR_BLOOD, COLOR_BUILDING,
-                       COLOR_BULLET, COLOR_CACTUS, COLOR_DIRT, COLOR_ENEMY,
+                       COLOR_BULLET, COLOR_CACTUS, COLOR_ENEMY,
                        COLOR_FLOOR, COLOR_PLAYER, COLOR_ROCK, COLOR_TREE,
                        COLOR_WALL, COLOR_WATER, HIT_ANIMATION_DELAY,
                        IMPACT_ANIMATION_DELAY, MAP_HEIGHT, MAP_WIDTH,
@@ -144,46 +103,6 @@ class Renderer:
             )
 
     def _render_weapon_selection(self):
-        """Render the weapon selection screen"""
-        title = "=== CHOOSE YOUR WEAPON ==="
-        self.console.print((SCREEN_WIDTH - len(title)) // 2, 10, title, (255, 255, 0))
-
-        weapons_info = [
-            "1. PISTOL",
-            "   - Range: 12 tiles",
-            "   - Accuracy: Good (40% minimum)",
-            "   - Damage: 20-35",
-            "   - Best for: Balanced combat",
-            "",
-            "2. RIFLE",
-            "   - Range: 20 tiles",
-            "   - Accuracy: Excellent (60% minimum)",
-            "   - Damage: 35-50",
-            "   - Best for: Long range precision",
-            "",
-            "3. SHOTGUN",
-            "   - Range: 8 tiles",
-            "   - Accuracy: Outstanding (80% minimum)",
-            "   - Damage: 40-60",
-            "   - Best for: Close quarters devastation",
-            "",
-            "Press 1, 2, or 3 to select your weapon",
-            "Press ESC to quit",
-        ]
-
-        start_y = 15
-        for i, line in enumerate(weapons_info):
-            color = (255, 255, 255)  # white
-            if line.startswith(("1.", "2.", "3.")):
-                color = (173, 216, 230)  # light blue
-            elif line.startswith("   - Best for:"):
-                color = (144, 238, 144)  # light green
-            elif line.startswith("Press"):
-                color = (255, 255, 0)  # yellow
-
-            self.console.print(
-                (SCREEN_WIDTH - len(line)) // 2, start_y + i, line, color
-            )
         """Render the weapon selection screen"""
         title = "=== CHOOSE YOUR WEAPON ==="
         self.console.print((SCREEN_WIDTH - len(title)) // 2, 10, title, (255, 255, 0))
@@ -370,38 +289,3 @@ class Renderer:
     def present(self):
         """Present the rendered frame to screen"""
         self.context.present(self.console)
-
-
-class UIHelper:
-    """Helper class for UI-related functions"""
-
-    @staticmethod
-    def get_health_bar(current_hp, max_hp, width=20):
-        """Generate a text-based health bar"""
-        filled = int((current_hp / max_hp) * width)
-        empty = width - filled
-        return f"[{'#' * filled}{'-' * empty}]"
-
-    @staticmethod
-    def get_distance_indicator(distance, max_range):
-        """Get a visual indicator of shooting distance"""
-        if distance > max_range:
-            return "OUT OF RANGE"
-        elif distance > max_range * 0.8:
-            return "FAR"
-        elif distance > max_range * 0.5:
-            return "MEDIUM"
-        else:
-            return "CLOSE"
-
-    @staticmethod
-    def format_combat_message(message, color=(255, 255, 255)):
-        """Format combat messages with appropriate styling"""
-        if "hits" in message.lower():
-            return message, (0, 255, 0)  # green
-        elif "misses" in message.lower():
-            return message, (255, 255, 0)  # yellow
-        elif "dead" in message.lower():
-            return message, (255, 0, 0)  # red
-        else:
-            return message, color
