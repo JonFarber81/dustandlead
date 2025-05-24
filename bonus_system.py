@@ -4,8 +4,9 @@ Player bonus system for character customization
 This module provides the bonus system that allows players to customize their
 character with special abilities that modify combat statistics and behavior.
 """
-from typing import Dict, List, Optional, Any, Union
+
 import random
+from typing import Any, Dict, List, Optional, Union
 
 from constants import (BONUS_DESPERADO_DAMAGE_DEALT_MULTIPLIER,
                        BONUS_DESPERADO_DAMAGE_TAKEN_MULTIPLIER,
@@ -18,7 +19,7 @@ from constants import (BONUS_DESPERADO_DAMAGE_DEALT_MULTIPLIER,
 
 class PlayerBonus:
     """Defines different player bonuses and their effects.
-    
+
     Contains static bonus definitions that provide various gameplay modifications
     including health increases, accuracy changes, damage bonuses, and special abilities.
     """
@@ -99,9 +100,11 @@ class PlayerBonus:
     }
 
     @staticmethod
-    def get_all_bonuses() -> List[Dict[str, Union[str, List[str], Dict[str, Union[int, float]]]]]:
+    def get_all_bonuses() -> (
+        List[Dict[str, Union[str, List[str], Dict[str, Union[int, float]]]]]
+    ):
         """Get list of all available bonuses for selection screen.
-        
+
         Returns:
             List of bonus dictionaries containing all available player bonuses
         """
@@ -115,12 +118,14 @@ class PlayerBonus:
         ]
 
     @staticmethod
-    def get_bonus_by_id(bonus_id: str) -> Optional[Dict[str, Union[str, List[str], Dict[str, Union[int, float]]]]]:
+    def get_bonus_by_id(
+        bonus_id: str,
+    ) -> Optional[Dict[str, Union[str, List[str], Dict[str, Union[int, float]]]]]:
         """Get bonus data by its unique identifier.
-        
+
         Args:
             bonus_id: String identifier for the desired bonus
-            
+
         Returns:
             Bonus dictionary if found, None otherwise
         """
@@ -133,23 +138,25 @@ class PlayerBonus:
 
 class BonusManager:
     """Manages bonus effects during gameplay.
-    
+
     Handles the application of bonus effects to combat calculations,
     player statistics, and special ability triggers during gameplay.
     """
 
     def __init__(self, bonus_data: Optional[Dict[str, Any]] = None) -> None:
         """Initialize the bonus manager with optional bonus data.
-        
+
         Args:
             bonus_data: Dictionary containing bonus information and stats
         """
         self.bonus: Optional[Dict[str, Any]] = bonus_data
-        self.stats: Dict[str, Union[int, float]] = bonus_data["stats"] if bonus_data else {}
+        self.stats: Dict[str, Union[int, float]] = (
+            bonus_data["stats"] if bonus_data else {}
+        )
 
     def apply_bonus_to_player(self, player: Any) -> None:
         """Apply bonus effects to player entity (typically health increases).
-        
+
         Args:
             player: Player entity to apply bonuses to
         """
@@ -164,10 +171,10 @@ class BonusManager:
 
     def modify_weapon_range(self, base_range: int) -> int:
         """Modify weapon range based on active bonus effects.
-        
+
         Args:
             base_range: Base weapon range before bonuses
-            
+
         Returns:
             Modified weapon range after applying bonus effects
         """
@@ -175,14 +182,16 @@ class BonusManager:
             return int(base_range * self.stats["range_multiplier"])
         return base_range
 
-    def modify_accuracy(self, base_accuracy: float, distance: float, max_range: int) -> float:
+    def modify_accuracy(
+        self, base_accuracy: float, distance: float, max_range: int
+    ) -> float:
         """Modify shooting accuracy based on bonus effects and distance.
-        
+
         Args:
             base_accuracy: Base accuracy before bonuses (0.0 to 1.0)
             distance: Distance to target
             max_range: Maximum weapon range (possibly modified by bonuses)
-            
+
         Returns:
             Modified accuracy value capped between 0.05 and 0.95
         """
@@ -202,10 +211,10 @@ class BonusManager:
 
     def modify_damage(self, base_damage: int) -> int:
         """Modify damage output based on active bonus effects.
-        
+
         Args:
             base_damage: Base damage before bonuses
-            
+
         Returns:
             Modified damage after applying bonus effects
         """
@@ -223,10 +232,10 @@ class BonusManager:
 
     def modify_damage_taken(self, base_damage: int) -> int:
         """Modify damage taken based on defensive bonus effects.
-        
+
         Args:
             base_damage: Base damage before defensive bonuses
-            
+
         Returns:
             Modified damage after applying defensive bonus effects
         """
@@ -240,7 +249,7 @@ class BonusManager:
 
     def check_critical_hit(self) -> bool:
         """Check if an attack should be a critical hit based on bonus effects.
-        
+
         Returns:
             True if attack should be a critical hit, False otherwise
         """
@@ -250,7 +259,7 @@ class BonusManager:
 
     def get_bonus_description(self) -> str:
         """Get a formatted description of the current bonus for UI display.
-        
+
         Returns:
             String description of active bonus, or default message if none
         """

@@ -1,6 +1,7 @@
 """
 Game constants and configuration
 """
+
 import tcod
 
 # Screen dimensions

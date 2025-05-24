@@ -271,10 +271,10 @@ class Game:
         """Restart the game while preserving the renderer connection"""
         # Store the current renderer to preserve it
         current_renderer = self.renderer
-        
+
         # Reset the game state
         self.__init__()
-        
+
         # Restore the renderer connection
         self.renderer = current_renderer
 

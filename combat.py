@@ -1,6 +1,7 @@
 """
 Combat system and shooting mechanics
 """
+
 import math
 import random
 
@@ -153,7 +154,9 @@ class CombatSystem:
         """
         # Use default pistol stats for backwards compatibility
         default_weapon = WeaponStats.PISTOL
-        return cls.attempt_shot_with_weapon_and_bonus(shooter, target, game_map, default_weapon)
+        return cls.attempt_shot_with_weapon_and_bonus(
+            shooter, target, game_map, default_weapon
+        )
 
     @staticmethod
     def _calculate_miss_endpoint(bullet_path, bullet_end_x, bullet_end_y):
@@ -179,22 +182,22 @@ class WeaponStats:
         "name": "Pistol",
         "max_range": 12,
         "min_accuracy": 0.4,
-        "damage_min": 20,
-        "damage_max": 35,
+        "damage_min": 35,
+        "damage_max": 50,
     }
 
     RIFLE = {
         "name": "Rifle",
         "max_range": 20,
         "min_accuracy": 0.6,
-        "damage_min": 35,
-        "damage_max": 50,
+        "damage_min": 15,
+        "damage_max": 35,
     }
 
     SHOTGUN = {
         "name": "Shotgun",
         "max_range": 8,
         "min_accuracy": 0.8,
-        "damage_min": 40,
+        "damage_min": 45,
         "damage_max": 60,
     }

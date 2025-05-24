@@ -4,8 +4,9 @@ Game map generation and utilities
 This module handles procedural map generation with Old West themed terrain,
 collision detection, line of sight calculations, and pathfinding utilities.
 """
+
 import random
-from typing import List, Tuple, Optional, Set
+from typing import List, Optional, Set, Tuple
 
 import tcod
 
@@ -17,7 +18,7 @@ from constants import (BUILDING_RUINS, CACTUS_PATCHES, MAX_CLUSTER_SIZE,
 
 class TerrainType:
     """Enum-like class for different terrain types.
-    
+
     Defines integer constants for all terrain types used in the game map.
     Each terrain type has different properties for movement and bullet blocking.
     """
@@ -33,7 +34,7 @@ class TerrainType:
 
 class GameMap:
     """Handles map generation, collision detection, and line of sight.
-    
+
     Generates procedural Old West themed maps with various terrain features
     including natural elements (trees, water, rocks) and man-made structures.
     Provides utilities for collision detection, pathfinding, and line of sight.
@@ -41,7 +42,7 @@ class GameMap:
 
     def __init__(self, width: int, height: int) -> None:
         """Initialize a new game map with specified dimensions.
-        
+
         Args:
             width: Map width in tiles
             height: Map height in tiles
@@ -49,12 +50,14 @@ class GameMap:
         self.width: int = width
         self.height: int = height
         # Use terrain types instead of just True/False
-        self.tiles: List[List[int]] = [[TerrainType.FLOOR for _ in range(height)] for _ in range(width)]
+        self.tiles: List[List[int]] = [
+            [TerrainType.FLOOR for _ in range(height)] for _ in range(width)
+        ]
         self.generate_old_west_map()
 
     def generate_old_west_map(self) -> None:
         """Generate an old west themed map with various terrain features.
-        
+
         Creates a complete map with border walls, natural terrain features,
         and man-made structures in a thematic Old West style.
         """
@@ -92,7 +95,7 @@ class GameMap:
 
     def _create_river(self) -> None:
         """Create a winding river across the map.
-        
+
         Rivers can be horizontal or vertical with some meandering for natural look.
         They block movement but not bullets (unlike walls).
         """
@@ -140,7 +143,7 @@ class GameMap:
 
     def _add_tree_clusters(self) -> None:
         """Add clusters of trees for cover and atmosphere.
-        
+
         Trees provide both visual interest and tactical cover options.
         They block both movement and bullets.
         """
@@ -166,7 +169,7 @@ class GameMap:
 
     def _add_rock_formations(self) -> None:
         """Add rocky outcroppings for cover.
-        
+
         Rock formations provide solid cover that blocks both movement and bullets,
         similar to walls but more natural looking.
         """
@@ -191,7 +194,7 @@ class GameMap:
 
     def _add_cactus_patches(self) -> None:
         """Add desert cacti scattered around for atmosphere.
-        
+
         Cacti block movement but not bullets, providing visual interest
         without significantly impacting combat dynamics.
         """
@@ -216,7 +219,7 @@ class GameMap:
 
     def _add_building_ruins(self) -> None:
         """Add ruins of old buildings for cover and atmosphere.
-        
+
         Building ruins are partial structures that provide cover while
         maintaining the Old West theme of abandoned settlements.
         """
@@ -246,7 +249,7 @@ class GameMap:
 
     def _add_cover_walls(self) -> None:
         """Add some traditional cover walls for tactical gameplay.
-        
+
         Creates small clusters of wall tiles that provide reliable cover
         options for tactical combat positioning.
         """
@@ -268,11 +271,11 @@ class GameMap:
 
     def is_valid_position(self, x: int, y: int) -> bool:
         """Check if position is within map bounds.
-        
+
         Args:
             x: X coordinate to check
             y: Y coordinate to check
-            
+
         Returns:
             True if position is within map bounds, False otherwise
         """
@@ -280,11 +283,11 @@ class GameMap:
 
     def is_blocked(self, x: int, y: int) -> bool:
         """Check if a position is blocked for movement.
-        
+
         Args:
             x: X coordinate to check
             y: Y coordinate to check
-            
+
         Returns:
             True if position blocks movement, False otherwise
         """
@@ -303,11 +306,11 @@ class GameMap:
 
     def blocks_bullets(self, x: int, y: int) -> bool:
         """Check if a position blocks bullets (different from movement blocking).
-        
+
         Args:
             x: X coordinate to check
             y: Y coordinate to check
-            
+
         Returns:
             True if position blocks bullets, False otherwise
         """
@@ -325,11 +328,11 @@ class GameMap:
 
     def is_walkable(self, x: int, y: int) -> bool:
         """Check if a position is walkable (opposite of blocked).
-        
+
         Args:
             x: X coordinate to check
             y: Y coordinate to check
-            
+
         Returns:
             True if position is walkable, False otherwise
         """
@@ -337,16 +340,16 @@ class GameMap:
 
     def line_of_sight(self, x1: int, y1: int, x2: int, y2: int) -> bool:
         """Check if there's a clear line of sight between two points.
-        
+
         Uses Bresenham's line algorithm to trace a path and check for
         bullet-blocking terrain along the way.
-        
+
         Args:
             x1: Starting X coordinate
             y1: Starting Y coordinate
-            x2: Ending X coordinate  
+            x2: Ending X coordinate
             y2: Ending Y coordinate
-            
+
         Returns:
             True if line of sight is clear, False if blocked
         """
@@ -360,11 +363,11 @@ class GameMap:
 
     def get_terrain_type(self, x: int, y: int) -> int:
         """Get the terrain type at a position.
-        
+
         Args:
             x: X coordinate
             y: Y coordinate
-            
+
         Returns:
             TerrainType constant for the terrain at that position,
             or TerrainType.WALL if position is invalid
@@ -375,10 +378,10 @@ class GameMap:
 
     def find_valid_positions(self, border_margin: int = 2) -> List[Tuple[int, int]]:
         """Find all valid (non-blocked) positions on the map.
-        
+
         Args:
             border_margin: Distance from map edges to exclude from results
-            
+
         Returns:
             List of (x, y) tuples representing walkable positions
         """
@@ -391,11 +394,11 @@ class GameMap:
 
     def get_terrain_positions_by_type(self, terrain_type: int) -> List[Tuple[int, int]]:
         """Get all positions of a specific terrain type.
-        
+
         Args:
             terrain_type: TerrainType constant to search for
-            
-        Returns:            
+
+        Returns:
             List of (x, y) tuples where the specified terrain type exists
         """
         positions = []
@@ -405,26 +408,30 @@ class GameMap:
                     positions.append((x, y))
         return positions
 
-    def get_line_path(self, x1: int, y1: int, x2: int, y2: int) -> List[Tuple[int, int]]:
+    def get_line_path(
+        self, x1: int, y1: int, x2: int, y2: int
+    ) -> List[Tuple[int, int]]:
         """Get the path of points between two coordinates using Bresenham's algorithm.
-        
+
         Args:
             x1: Starting X coordinate
             y1: Starting Y coordinate
             x2: Ending X coordinate
             y2: Ending Y coordinate
-            
+
         Returns:
             List of (x, y) coordinate tuples representing the line path
         """
         return tcod.los.bresenham((x1, y1), (x2, y2)).tolist()
 
-    def find_spawn_positions(self, min_distance: int = 20) -> Tuple[Optional[Tuple[int, int]], Optional[Tuple[int, int]]]:
+    def find_spawn_positions(
+        self, min_distance: int = 20
+    ) -> Tuple[Optional[Tuple[int, int]], Optional[Tuple[int, int]]]:
         """Find two spawn positions that are far apart for balanced gameplay.
-        
+
         Args:
             min_distance: Minimum Manhattan distance between spawn points
-            
+
         Returns:
             Tuple of two (x, y) position tuples, or (None, None) if suitable
             positions cannot be found

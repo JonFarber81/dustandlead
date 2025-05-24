@@ -4,22 +4,23 @@ AI system for enemy behavior
 This module contains the AI controller that manages enemy decision-making,
 including movement tactics, shooting decisions, and behavioral patterns.
 """
+
 import random
-from typing import Tuple, List, Optional, Any
+from typing import Any, List, Optional, Tuple
 
 from constants import MAX_SHOOTING_RANGE
 
 
 class EnemyAI:
     """AI controller for enemy entities.
-    
+
     Manages enemy decision-making including when to shoot, how to move,
     and tactical positioning relative to the player and terrain.
     """
 
     def __init__(self, enemy_entity: Any) -> None:
         """Initialize the AI controller for a specific enemy entity.
-        
+
         Args:
             enemy_entity: The enemy entity this AI will control
         """
@@ -28,21 +29,18 @@ class EnemyAI:
         self.last_player_position: Optional[Tuple[int, int]] = None
 
     def take_turn(
-        self, 
-        player: Any, 
-        game_map: Any, 
-        combat_system: Any
+        self, player: Any, game_map: Any, combat_system: Any
     ) -> Tuple[str, Any, str]:
         """Decide what the enemy should do this turn.
-        
+
         Evaluates the current tactical situation and decides between shooting,
         moving, or waiting based on distance, line of sight, and AI personality.
-        
+
         Args:
             player: Player entity to target/track
             game_map: GameMap instance for terrain and line of sight
             combat_system: CombatSystem for handling shooting attempts
-            
+
         Returns:
             Tuple containing:
                 - action_type: String describing action taken ("shoot", "move", "wait", "dead")
@@ -69,11 +67,11 @@ class EnemyAI:
 
     def _should_shoot(self, distance: float, has_line_of_sight: bool) -> bool:
         """Decide if enemy should shoot this turn based on tactical factors.
-        
+
         Args:
             distance: Distance to player in tiles
             has_line_of_sight: Whether enemy can see the player
-            
+
         Returns:
             True if enemy should attempt to shoot, False otherwise
         """
@@ -92,18 +90,15 @@ class EnemyAI:
         return random.random() < shoot_chance
 
     def _attempt_shoot(
-        self, 
-        player: Any, 
-        game_map: Any, 
-        combat_system: Any
+        self, player: Any, game_map: Any, combat_system: Any
     ) -> Tuple[str, Any, str]:
         """Attempt to shoot at the player.
-        
+
         Args:
             player: Player entity to shoot at
             game_map: GameMap instance for terrain collision
             combat_system: CombatSystem for handling the shot
-            
+
         Returns:
             Tuple of ("shoot", shot_result_dict, message_string)
         """
@@ -112,14 +107,14 @@ class EnemyAI:
 
     def _attempt_move(self, player: Any, game_map: Any) -> Tuple[str, Any, str]:
         """Attempt to move towards the player or last known position.
-        
+
         Uses tactical movement including trying alternative paths when
         the direct route is blocked by terrain.
-        
+
         Args:
             player: Player entity to move towards
             game_map: GameMap instance for collision detection
-            
+
         Returns:
             Tuple of ("move"/"wait", movement_data, message_string)
         """
@@ -151,14 +146,14 @@ class EnemyAI:
 
     def _get_movement_target(self, player: Any, game_map: Any) -> Tuple[int, int]:
         """Get the position the enemy should move towards.
-        
+
         Uses last known player position if line of sight is lost,
         providing more intelligent tracking behavior.
-        
+
         Args:
             player: Player entity to target
             game_map: GameMap instance for line of sight calculation
-            
+
         Returns:
             Tuple of (target_x, target_y) coordinates to move towards
         """
@@ -175,13 +170,15 @@ class EnemyAI:
             # No idea where player is, move towards current player position as fallback
             return player.x, player.y
 
-    def _calculate_movement_direction(self, target_x: int, target_y: int) -> Tuple[int, int]:
+    def _calculate_movement_direction(
+        self, target_x: int, target_y: int
+    ) -> Tuple[int, int]:
         """Calculate the best movement direction towards target.
-        
+
         Args:
             target_x: Target X coordinate
             target_y: Target Y coordinate
-            
+
         Returns:
             Tuple of (dx, dy) movement direction (-1, 0, or 1 for each axis)
         """
@@ -200,16 +197,18 @@ class EnemyAI:
 
         return dx, dy
 
-    def _get_alternative_moves(self, preferred_dx: int, preferred_dy: int) -> List[Tuple[int, int]]:
+    def _get_alternative_moves(
+        self, preferred_dx: int, preferred_dy: int
+    ) -> List[Tuple[int, int]]:
         """Get alternative movement options if preferred direction is blocked.
-        
+
         Provides tactical movement alternatives when the direct path is blocked,
         including diagonal alternatives and random fallback moves.
-        
+
         Args:
             preferred_dx: Preferred X direction (-1, 0, or 1)
             preferred_dy: Preferred Y direction (-1, 0, or 1)
-            
+
         Returns:
             List of (dx, dy) tuples representing alternative movement options
         """
@@ -225,9 +224,14 @@ class EnemyAI:
 
         # Add some random movement as last resort
         all_moves = [
-            (-1, -1), (-1, 0), (-1, 1),
-            (0, -1),           (0, 1),
-            (1, -1),  (1, 0),  (1, 1),
+            (-1, -1),
+            (-1, 0),
+            (-1, 1),
+            (0, -1),
+            (0, 1),
+            (1, -1),
+            (1, 0),
+            (1, 1),
         ]
         random.shuffle(all_moves)
         alternatives.extend(all_moves)
@@ -236,7 +240,7 @@ class EnemyAI:
 
     def set_aggression(self, aggression_level: float) -> None:
         """Set how aggressive this enemy is in combat.
-        
+
         Args:
             aggression_level: Aggression value from 0.0 (defensive) to 1.0 (very aggressive)
         """

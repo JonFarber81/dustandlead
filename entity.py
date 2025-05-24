@@ -1,6 +1,7 @@
 """
 Entity classes for game objects
 """
+
 from constants import ENEMY_MAX_HP, PLAYER_MAX_HP
 
 
