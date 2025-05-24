@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
 Old West Gunfight - Main game file
+
+This module contains the main Game class that coordinates all game systems
+including player input, entity management, combat resolution, and game state.
 """
 
 import random
+from typing import Optional, Tuple, Dict, Any, Union
 
 import tcod
 
@@ -19,28 +23,37 @@ from renderer import Renderer
 
 
 class Game:
-    """Main game class that coordinates all systems"""
+    """Main game class that coordinates all systems.
+    
+    Manages game state, player input, AI turns, combat resolution,
+    and coordinates between all game subsystems.
+    """
 
-    def __init__(self):
-        self.game_map = GameMap(MAP_WIDTH, MAP_HEIGHT)
-        self.player = None
-        self.enemy = None
-        self.enemy_ai = None
-        self.combat_system = CombatSystem()
-        self.renderer = None
-        self.game_over = False
-        self.winner = None
-        self.message = ""
-        self.game_started = False
-        self.bonus_selected = False
-        self.weapon_selected = False
-        self.player_weapon = None
-        self.player_bonus = None
-        self.bonus_manager = None
+    def __init__(self) -> None:
+        """Initialize a new game instance with default state."""
+        self.game_map: GameMap = GameMap(MAP_WIDTH, MAP_HEIGHT)
+        self.player: Optional[Player] = None
+        self.enemy: Optional[Enemy] = None
+        self.enemy_ai: Optional[EnemyAI] = None
+        self.combat_system: CombatSystem = CombatSystem()
+        self.renderer: Optional[Renderer] = None
+        self.game_over: bool = False
+        self.winner: Optional[str] = None
+        self.message: str = ""
+        self.game_started: bool = False
+        self.bonus_selected: bool = False
+        self.weapon_selected: bool = False
+        self.player_weapon: Optional[Dict[str, Union[str, int, float]]] = None
+        self.player_bonus: Optional[Dict[str, Any]] = None
+        self.bonus_manager: Optional[BonusManager] = None
         self.spawn_entities()
 
-    def spawn_entities(self):
-        """Spawn player and enemy at valid positions"""
+    def spawn_entities(self) -> None:
+        """Spawn player and enemy entities at valid positions on the map.
+        
+        Attempts to find optimal spawn positions with good separation,
+        falls back to any valid positions if needed.
+        """
         player_pos, enemy_pos = self.game_map.find_spawn_positions()
 
         if player_pos and enemy_pos:
@@ -69,12 +82,20 @@ class Game:
 
                 self.enemy_ai = EnemyAI(self.enemy)
 
-    def set_renderer(self, renderer):
-        """Set the renderer for this game instance"""
+    def set_renderer(self, renderer: Renderer) -> None:
+        """Set the renderer for this game instance.
+        
+        Args:
+            renderer: Renderer instance to use for drawing the game
+        """
         self.renderer = renderer
 
-    def get_game_state(self):
-        """Get current game state for rendering"""
+    def get_game_state(self) -> Dict[str, Any]:
+        """Get current game state for rendering and external access.
+        
+        Returns:
+            Dictionary containing all relevant game state information
+        """
         return {
             "game_map": self.game_map,
             "entities": [self.player, self.enemy],
@@ -91,8 +112,15 @@ class Game:
             "bonus_manager": self.bonus_manager,
         }
 
-    def select_bonus(self, bonus_choice):
-        """Select bonus for the player"""
+    def select_bonus(self, bonus_choice: str) -> bool:
+        """Select a bonus for the player based on input choice.
+        
+        Args:
+            bonus_choice: String representing the bonus choice ("1"-"6")
+            
+        Returns:
+            True if bonus was successfully selected, False otherwise
+        """
         bonus_map = {
             "1": "tough",
             "2": "longshot",
@@ -118,8 +146,15 @@ class Game:
             return True
         return False
 
-    def select_weapon(self, weapon_choice):
-        """Select weapon for the player"""
+    def select_weapon(self, weapon_choice: str) -> bool:
+        """Select a weapon for the player based on input choice.
+        
+        Args:
+            weapon_choice: String representing the weapon choice ("1"-"3")
+            
+        Returns:
+            True if weapon was successfully selected, False otherwise
+        """
         weapons = {
             "1": WeaponStats.PISTOL,
             "2": WeaponStats.RIFLE,
@@ -136,8 +171,15 @@ class Game:
             return True
         return False
 
-    def handle_input(self, key):
-        """Handle player input"""
+    def handle_input(self, key: tcod.event.KeyDown) -> Optional[str]:
+        """Handle player keyboard input for all game phases.
+        
+        Args:
+            key: TCOD KeyDown event containing the pressed key
+            
+        Returns:
+            "exit" if player wants to quit, None otherwise
+        """
         # Bonus selection phase
         if not self.bonus_selected:
             if key.sym == tcod.event.KeySym.ESCAPE:
@@ -207,8 +249,8 @@ class Game:
 
         return None
 
-    def handle_player_shoot(self):
-        """Handle player shooting with selected weapon and bonus"""
+    def handle_player_shoot(self) -> None:
+        """Handle player shooting action with selected weapon and bonus effects."""
         shot_result = self.combat_system.attempt_shot_with_weapon_and_bonus(
             self.player,
             self.enemy,
@@ -236,8 +278,8 @@ class Game:
             self.game_over = True
             self.winner = self.player.name
 
-    def handle_enemy_turn(self):
-        """Handle enemy AI turn"""
+    def handle_enemy_turn(self) -> None:
+        """Handle enemy AI turn including movement and shooting decisions."""
         if not self.enemy.alive:
             return
 
@@ -267,13 +309,17 @@ class Game:
 
         self.message = ai_message
 
-    def restart_game(self):
-        """Restart the game"""
+    def restart_game(self) -> None:
+        """Restart the game by reinitializing all components."""
         self.__init__()
 
 
-def main():
-    """Main function to run the game"""
+def main() -> None:
+    """Main function to run the game.
+    
+    Initializes TCOD context, creates game and renderer instances,
+    and runs the main game loop handling events and rendering.
+    """
     # Initialize tcod context
     with tcod.context.new(
         columns=SCREEN_WIDTH,
@@ -281,7 +327,7 @@ def main():
         tileset=tcod.tileset.load_tilesheet(
             "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
         ),
-        title="Old West Gunfight",
+        title="Dust & Lead",
         vsync=True,
     ) as context:
         # Create console and game

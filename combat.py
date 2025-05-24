@@ -1,38 +1,92 @@
 """
 Combat system and shooting mechanics
+
+This module handles all combat-related mechanics including shooting accuracy,
+damage calculation, bullet pathing, and weapon statistics.
 """
 import math
 import random
+from typing import Dict, List, Tuple, Any, Optional, Union
 
 from constants import (DAMAGE_MAX, DAMAGE_MIN, MAP_HEIGHT, MAP_WIDTH,
                        MAX_SHOOTING_RANGE, MIN_ACCURACY)
 
 
 class CombatSystem:
-    """Handles all combat-related mechanics"""
+    """Handles all combat-related mechanics including shooting and damage calculation."""
 
     @staticmethod
-    def calculate_distance(x1, y1, x2, y2):
-        """Calculate distance between two points"""
+    def calculate_distance(x1: int, y1: int, x2: int, y2: int) -> float:
+        """Calculate Euclidean distance between two points.
+        
+        Args:
+            x1: X coordinate of first point
+            y1: Y coordinate of first point  
+            x2: X coordinate of second point
+            y2: Y coordinate of second point
+            
+        Returns:
+            The Euclidean distance between the two points
+        """
         return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
     @staticmethod
     def calculate_accuracy(
-        distance, max_range=MAX_SHOOTING_RANGE, min_acc=MIN_ACCURACY
-    ):
-        """Calculate shooting accuracy based on distance"""
+        distance: float, 
+        max_range: int = MAX_SHOOTING_RANGE, 
+        min_acc: float = MIN_ACCURACY
+    ) -> float:
+        """Calculate shooting accuracy based on distance to target.
+        
+        Accuracy decreases linearly with distance, with a 70% reduction at max range.
+        
+        Args:
+            distance: Distance to target in tiles
+            max_range: Maximum effective shooting range
+            min_acc: Minimum accuracy at maximum range
+            
+        Returns:
+            Accuracy value between 0.0 and 1.0, or 0.0 if out of range
+        """
         if distance > max_range:
             return 0.0
         return max(min_acc, 1.0 - (distance / max_range) * 0.7)
 
     @staticmethod
-    def calculate_damage():
-        """Calculate random damage for a successful hit"""
+    def calculate_damage() -> int:
+        """Calculate random damage for a successful hit.
+        
+        Returns:
+            Random damage value between DAMAGE_MIN and DAMAGE_MAX
+        """
         return random.randint(DAMAGE_MIN, DAMAGE_MAX)
 
     @staticmethod
-    def get_bullet_path(game_map, start_x, start_y, target_x, target_y):
-        """Get the path a bullet would travel and where it stops"""
+    def get_bullet_path(
+        game_map: Any, 
+        start_x: int, 
+        start_y: int, 
+        target_x: int, 
+        target_y: int
+    ) -> Tuple[List[Tuple[int, int]], int, int]:
+        """Get the path a bullet would travel and where it stops.
+        
+        Uses Bresenham's line algorithm to trace bullet path and determines
+        where the bullet stops due to terrain blocking.
+        
+        Args:
+            game_map: GameMap instance for collision detection
+            start_x: Starting X coordinate (shooter position)
+            start_y: Starting Y coordinate (shooter position)
+            target_x: Target X coordinate
+            target_y: Target Y coordinate
+            
+        Returns:
+            Tuple containing:
+                - List of (x, y) coordinate tuples representing bullet path
+                - Final X coordinate where bullet stops
+                - Final Y coordinate where bullet stops
+        """
         bullet_path = game_map.get_line_path(start_x, start_y, target_x, target_y)
         bullet_end_x, bullet_end_y = target_x, target_y
 
@@ -46,10 +100,35 @@ class CombatSystem:
 
     @classmethod
     def attempt_shot_with_weapon_and_bonus(
-        cls, shooter, target, game_map, weapon_stats, bonus_manager=None
-    ):
-        """
-        Attempt a shot from shooter to target using weapon stats and bonus effects
+        cls,
+        shooter: Any,
+        target: Any,
+        game_map: Any,
+        weapon_stats: Dict[str, Union[str, int, float]],
+        bonus_manager: Optional[Any] = None
+    ) -> Dict[str, Any]:
+        """Attempt a shot from shooter to target using weapon stats and bonus effects.
+        
+        This is the main shooting method that handles all aspects of combat including
+        range checking, accuracy calculation, damage dealing, and bonus effects.
+        
+        Args:
+            shooter: Entity attempting the shot
+            target: Entity being targeted
+            game_map: GameMap instance for terrain collision
+            weapon_stats: Dictionary containing weapon statistics
+            bonus_manager: Optional BonusManager for applying combat bonuses
+            
+        Returns:
+            Dictionary containing shot result with keys:
+                - hit: Boolean indicating if shot was successful
+                - bullet_path: List of coordinates bullet traveled
+                - bullet_end: Tuple of final bullet position
+                - damage: Integer damage dealt (0 if miss)
+                - message: String description of shot result
+                - hit_target: Boolean if bullet reached target position
+                - target_died: Boolean if target was killed (if hit)
+                - critical_hit: Boolean if shot was a critical hit (if applicable)
         """
         distance = cls.calculate_distance(shooter.x, shooter.y, target.x, target.y)
         bullet_path, bullet_end_x, bullet_end_y = cls.get_bullet_path(
@@ -161,18 +240,41 @@ class CombatSystem:
             }
 
     @classmethod
-    def attempt_shot(cls, shooter, target, game_map):
-        """
-        Attempt a shot from shooter to target (uses default weapon stats)
-        Returns: (hit_result, bullet_path, bullet_end, damage, message)
+    def attempt_shot(cls, shooter: Any, target: Any, game_map: Any) -> Dict[str, Any]:
+        """Attempt a shot from shooter to target using default weapon stats.
+        
+        Convenience method for backwards compatibility that uses default pistol stats.
+        
+        Args:
+            shooter: Entity attempting the shot
+            target: Entity being targeted  
+            game_map: GameMap instance for terrain collision
+            
+        Returns:
+            Dictionary containing shot result (see attempt_shot_with_weapon_and_bonus)
         """
         # Use default pistol stats for backwards compatibility
         default_weapon = WeaponStats.PISTOL
         return cls.attempt_shot_with_weapon_and_bonus(shooter, target, game_map, default_weapon)
 
     @staticmethod
-    def _calculate_miss_endpoint(bullet_path, bullet_end_x, bullet_end_y):
-        """Calculate where a missed bullet ends up"""
+    def _calculate_miss_endpoint(
+        bullet_path: List[Tuple[int, int]], 
+        bullet_end_x: int, 
+        bullet_end_y: int
+    ) -> Tuple[int, int]:
+        """Calculate where a missed bullet ends up.
+        
+        Extends the bullet path beyond the target to show miss effect.
+        
+        Args:
+            bullet_path: List of coordinates the bullet traveled
+            bullet_end_x: Original bullet end X coordinate
+            bullet_end_y: Original bullet end Y coordinate
+            
+        Returns:
+            Tuple of (x, y) coordinates where missed bullet ends up
+        """
         if len(bullet_path) > 1:
             # Extend path a bit past target for miss effect
             dx = bullet_path[-1][0] - bullet_path[-2][0] if len(bullet_path) > 1 else 0
@@ -188,9 +290,12 @@ class CombatSystem:
 
 
 class WeaponStats:
-    """Define different weapon types and their stats"""
+    """Define different weapon types and their statistics.
+    
+    Contains static weapon definitions with their range, accuracy, and damage properties.
+    """
 
-    PISTOL = {
+    PISTOL: Dict[str, Union[str, int, float]] = {
         "name": "Pistol",
         "max_range": 12,
         "min_accuracy": 0.4,
@@ -198,7 +303,7 @@ class WeaponStats:
         "damage_max": 35,
     }
 
-    RIFLE = {
+    RIFLE: Dict[str, Union[str, int, float]] = {
         "name": "Rifle",
         "max_range": 20,
         "min_accuracy": 0.6,
@@ -206,7 +311,7 @@ class WeaponStats:
         "damage_max": 50,
     }
 
-    SHOTGUN = {
+    SHOTGUN: Dict[str, Union[str, int, float]] = {
         "name": "Shotgun",
         "max_range": 8,
         "min_accuracy": 0.8,

@@ -1,7 +1,11 @@
 """
 Game map generation and utilities
+
+This module handles procedural map generation with Old West themed terrain,
+collision detection, line of sight calculations, and pathfinding utilities.
 """
 import random
+from typing import List, Tuple, Optional, Set
 
 import tcod
 
@@ -12,29 +16,48 @@ from constants import (BUILDING_RUINS, CACTUS_PATCHES, MAX_CLUSTER_SIZE,
 
 
 class TerrainType:
-    """Enum-like class for different terrain types"""
+    """Enum-like class for different terrain types.
+    
+    Defines integer constants for all terrain types used in the game map.
+    Each terrain type has different properties for movement and bullet blocking.
+    """
 
-    FLOOR = 0
-    WALL = 1
-    TREE = 2
-    WATER = 3
-    ROCK = 4
-    CACTUS = 5
-    BUILDING = 6
+    FLOOR: int = 0
+    WALL: int = 1
+    TREE: int = 2
+    WATER: int = 3
+    ROCK: int = 4
+    CACTUS: int = 5
+    BUILDING: int = 6
 
 
 class GameMap:
-    """Handles map generation, collision detection, and line of sight"""
+    """Handles map generation, collision detection, and line of sight.
+    
+    Generates procedural Old West themed maps with various terrain features
+    including natural elements (trees, water, rocks) and man-made structures.
+    Provides utilities for collision detection, pathfinding, and line of sight.
+    """
 
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
+    def __init__(self, width: int, height: int) -> None:
+        """Initialize a new game map with specified dimensions.
+        
+        Args:
+            width: Map width in tiles
+            height: Map height in tiles
+        """
+        self.width: int = width
+        self.height: int = height
         # Use terrain types instead of just True/False
-        self.tiles = [[TerrainType.FLOOR for _ in range(height)] for _ in range(width)]
+        self.tiles: List[List[int]] = [[TerrainType.FLOOR for _ in range(height)] for _ in range(width)]
         self.generate_old_west_map()
 
-    def generate_old_west_map(self):
-        """Generate an old west themed map with various terrain features"""
+    def generate_old_west_map(self) -> None:
+        """Generate an old west themed map with various terrain features.
+        
+        Creates a complete map with border walls, natural terrain features,
+        and man-made structures in a thematic Old West style.
+        """
         # Start with basic border walls
         self._create_border_walls()
 
@@ -48,8 +71,8 @@ class GameMap:
         self._add_building_ruins()
         self._add_cover_walls()
 
-    def _create_border_walls(self):
-        """Create walls around the map border"""
+    def _create_border_walls(self) -> None:
+        """Create walls around the map border to prevent entities from leaving."""
         for x in range(self.width):
             self.tiles[x][0] = TerrainType.WALL
             self.tiles[x][self.height - 1] = TerrainType.WALL
@@ -57,8 +80,8 @@ class GameMap:
             self.tiles[0][y] = TerrainType.WALL
             self.tiles[self.width - 1][y] = TerrainType.WALL
 
-    def _add_water_features(self):
-        """Add rivers, ponds, or streams"""
+    def _add_water_features(self) -> None:
+        """Add rivers, ponds, or streams to the map for natural obstacles."""
         num_features = random.randint(*WATER_FEATURES)
 
         for _ in range(num_features):
@@ -67,8 +90,12 @@ class GameMap:
             else:
                 self._create_pond()
 
-    def _create_river(self):
-        """Create a winding river across the map"""
+    def _create_river(self) -> None:
+        """Create a winding river across the map.
+        
+        Rivers can be horizontal or vertical with some meandering for natural look.
+        They block movement but not bullets (unlike walls).
+        """
         # Choose river direction (horizontal or vertical)
         if random.choice([True, False]):
             # Horizontal river
@@ -97,8 +124,8 @@ class GameMap:
                     if self.is_valid_position(wx, y):
                         self.tiles[wx][y] = TerrainType.WATER
 
-    def _create_pond(self):
-        """Create a small pond or lake"""
+    def _create_pond(self) -> None:
+        """Create a small pond or lake with roughly circular shape."""
         center_x = random.randint(5, self.width - 6)
         center_y = random.randint(5, self.height - 6)
         size = random.randint(*WATER_SIZE)
@@ -111,8 +138,12 @@ class GameMap:
                     if distance <= size // 2 + random.randint(-1, 1):
                         self.tiles[x][y] = TerrainType.WATER
 
-    def _add_tree_clusters(self):
-        """Add clusters of trees for cover and atmosphere"""
+    def _add_tree_clusters(self) -> None:
+        """Add clusters of trees for cover and atmosphere.
+        
+        Trees provide both visual interest and tactical cover options.
+        They block both movement and bullets.
+        """
         num_clusters = random.randint(*TREE_CLUSTERS)
 
         for _ in range(num_clusters):
@@ -133,8 +164,12 @@ class GameMap:
                 ):
                     self.tiles[tree_x][tree_y] = TerrainType.TREE
 
-    def _add_rock_formations(self):
-        """Add rocky outcroppings for cover"""
+    def _add_rock_formations(self) -> None:
+        """Add rocky outcroppings for cover.
+        
+        Rock formations provide solid cover that blocks both movement and bullets,
+        similar to walls but more natural looking.
+        """
         num_formations = random.randint(*ROCK_FORMATIONS)
 
         for _ in range(num_formations):
@@ -154,8 +189,12 @@ class GameMap:
                 ):
                     self.tiles[rock_x][rock_y] = TerrainType.ROCK
 
-    def _add_cactus_patches(self):
-        """Add desert cacti scattered around"""
+    def _add_cactus_patches(self) -> None:
+        """Add desert cacti scattered around for atmosphere.
+        
+        Cacti block movement but not bullets, providing visual interest
+        without significantly impacting combat dynamics.
+        """
         num_patches = random.randint(*CACTUS_PATCHES)
 
         for _ in range(num_patches):
@@ -175,8 +214,12 @@ class GameMap:
                 ):
                     self.tiles[cactus_x][cactus_y] = TerrainType.CACTUS
 
-    def _add_building_ruins(self):
-        """Add ruins of old buildings"""
+    def _add_building_ruins(self) -> None:
+        """Add ruins of old buildings for cover and atmosphere.
+        
+        Building ruins are partial structures that provide cover while
+        maintaining the Old West theme of abandoned settlements.
+        """
         num_ruins = random.randint(*BUILDING_RUINS)
 
         for _ in range(num_ruins):
@@ -201,8 +244,12 @@ class GameMap:
                             if self.tiles[x][y] == TerrainType.FLOOR:
                                 self.tiles[x][y] = TerrainType.BUILDING
 
-    def _add_cover_walls(self):
-        """Add some traditional cover walls like the original"""
+    def _add_cover_walls(self) -> None:
+        """Add some traditional cover walls for tactical gameplay.
+        
+        Creates small clusters of wall tiles that provide reliable cover
+        options for tactical combat positioning.
+        """
         num_walls = random.randint(MIN_WALL_CLUSTERS, MAX_WALL_CLUSTERS)
         for _ in range(num_walls):
             x = random.randint(2, self.width - 3)
@@ -219,17 +266,33 @@ class GameMap:
                 x += random.randint(-1, 1)
                 y += random.randint(-1, 1)
 
-    def is_valid_position(self, x, y):
-        """Check if position is within map bounds"""
+    def is_valid_position(self, x: int, y: int) -> bool:
+        """Check if position is within map bounds.
+        
+        Args:
+            x: X coordinate to check
+            y: Y coordinate to check
+            
+        Returns:
+            True if position is within map bounds, False otherwise
+        """
         return 0 <= x < self.width and 0 <= y < self.height
 
-    def is_blocked(self, x, y):
-        """Check if a position is blocked (wall or out of bounds)"""
+    def is_blocked(self, x: int, y: int) -> bool:
+        """Check if a position is blocked for movement.
+        
+        Args:
+            x: X coordinate to check
+            y: Y coordinate to check
+            
+        Returns:
+            True if position blocks movement, False otherwise
+        """
         if not self.is_valid_position(x, y):
             return True
 
         # All solid terrain types block movement
-        blocking_terrain = {
+        blocking_terrain: Set[int] = {
             TerrainType.WALL,
             TerrainType.TREE,
             TerrainType.WATER,
@@ -238,13 +301,21 @@ class GameMap:
         }
         return self.tiles[x][y] in blocking_terrain
 
-    def blocks_bullets(self, x, y):
-        """Check if a position blocks bullets (different from movement)"""
+    def blocks_bullets(self, x: int, y: int) -> bool:
+        """Check if a position blocks bullets (different from movement blocking).
+        
+        Args:
+            x: X coordinate to check
+            y: Y coordinate to check
+            
+        Returns:
+            True if position blocks bullets, False otherwise
+        """
         if not self.is_valid_position(x, y):
             return True
 
         # Cacti don't block bullets, but other terrain does
-        bullet_blocking = {
+        bullet_blocking: Set[int] = {
             TerrainType.WALL,
             TerrainType.TREE,
             TerrainType.ROCK,
@@ -252,12 +323,33 @@ class GameMap:
         }
         return self.tiles[x][y] in bullet_blocking
 
-    def is_walkable(self, x, y):
-        """Check if a position is walkable (opposite of blocked)"""
+    def is_walkable(self, x: int, y: int) -> bool:
+        """Check if a position is walkable (opposite of blocked).
+        
+        Args:
+            x: X coordinate to check
+            y: Y coordinate to check
+            
+        Returns:
+            True if position is walkable, False otherwise
+        """
         return not self.is_blocked(x, y)
 
-    def line_of_sight(self, x1, y1, x2, y2):
-        """Check if there's a clear line of sight between two points"""
+    def line_of_sight(self, x1: int, y1: int, x2: int, y2: int) -> bool:
+        """Check if there's a clear line of sight between two points.
+        
+        Uses Bresenham's line algorithm to trace a path and check for
+        bullet-blocking terrain along the way.
+        
+        Args:
+            x1: Starting X coordinate
+            y1: Starting Y coordinate
+            x2: Ending X coordinate  
+            y2: Ending Y coordinate
+            
+        Returns:
+            True if line of sight is clear, False if blocked
+        """
         line_points = tcod.los.bresenham((x1, y1), (x2, y2)).tolist()
 
         # Check each point in the line (except start and end)
@@ -266,14 +358,30 @@ class GameMap:
                 return False
         return True
 
-    def get_terrain_type(self, x, y):
-        """Get the terrain type at a position"""
+    def get_terrain_type(self, x: int, y: int) -> int:
+        """Get the terrain type at a position.
+        
+        Args:
+            x: X coordinate
+            y: Y coordinate
+            
+        Returns:
+            TerrainType constant for the terrain at that position,
+            or TerrainType.WALL if position is invalid
+        """
         if not self.is_valid_position(x, y):
             return TerrainType.WALL
         return self.tiles[x][y]
 
-    def find_valid_positions(self, border_margin=2):
-        """Find all valid (non-blocked) positions on the map"""
+    def find_valid_positions(self, border_margin: int = 2) -> List[Tuple[int, int]]:
+        """Find all valid (non-blocked) positions on the map.
+        
+        Args:
+            border_margin: Distance from map edges to exclude from results
+            
+        Returns:
+            List of (x, y) tuples representing walkable positions
+        """
         valid_positions = []
         for x in range(border_margin, self.width - border_margin):
             for y in range(border_margin, self.height - border_margin):
@@ -281,8 +389,15 @@ class GameMap:
                     valid_positions.append((x, y))
         return valid_positions
 
-    def get_terrain_positions_by_type(self, terrain_type):
-        """Get all positions of a specific terrain type"""
+    def get_terrain_positions_by_type(self, terrain_type: int) -> List[Tuple[int, int]]:
+        """Get all positions of a specific terrain type.
+        
+        Args:
+            terrain_type: TerrainType constant to search for
+            
+        Returns:            
+            List of (x, y) tuples where the specified terrain type exists
+        """
         positions = []
         for x in range(self.width):
             for y in range(self.height):
@@ -290,12 +405,30 @@ class GameMap:
                     positions.append((x, y))
         return positions
 
-    def get_line_path(self, x1, y1, x2, y2):
-        """Get the path of points between two coordinates"""
+    def get_line_path(self, x1: int, y1: int, x2: int, y2: int) -> List[Tuple[int, int]]:
+        """Get the path of points between two coordinates using Bresenham's algorithm.
+        
+        Args:
+            x1: Starting X coordinate
+            y1: Starting Y coordinate
+            x2: Ending X coordinate
+            y2: Ending Y coordinate
+            
+        Returns:
+            List of (x, y) coordinate tuples representing the line path
+        """
         return tcod.los.bresenham((x1, y1), (x2, y2)).tolist()
 
-    def find_spawn_positions(self, min_distance=20):
-        """Find two spawn positions that are far apart"""
+    def find_spawn_positions(self, min_distance: int = 20) -> Tuple[Optional[Tuple[int, int]], Optional[Tuple[int, int]]]:
+        """Find two spawn positions that are far apart for balanced gameplay.
+        
+        Args:
+            min_distance: Minimum Manhattan distance between spawn points
+            
+        Returns:
+            Tuple of two (x, y) position tuples, or (None, None) if suitable
+            positions cannot be found
+        """
         valid_positions = self.find_valid_positions()
 
         if len(valid_positions) < 2:
